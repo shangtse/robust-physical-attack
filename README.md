@@ -25,6 +25,11 @@ https://youtu.be/8rwoJ93jhY4
 
 
 
+![drive_by_snapshots](drive_by_snapshots.jpg)
+Snapshots of the drive-by test results. In (a), the person perturbation was detected 38% of the frames as a person and only once as a stop sign. The perturbation in (b) was detected 11% of the time as a sports ball and never as a stop sign. The untargeted perturbation in (c) was never detected as a stop sign or anything else.
+
+
+
 ## Researchers
 
 |  Name                 | Affiliation                     |
