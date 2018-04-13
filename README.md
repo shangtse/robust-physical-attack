@@ -11,11 +11,17 @@ Attacking an object detector is more difficult than attacking an image classifie
 Our approach can generate perturbed stop signs that are consistently mis-detected by Faster R-CNN as other objects, posing a potential threat to autonomous vehicles and other safety-critical computer vision systems.
 
 
-### Install Dependencies
+## Install Dependencies
 
 This repository depends on Tensorflow Object Detection API.
 Follow the installation instructions at https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md
 
+## How to Run the Code
+
+Run the ipython notebook by the command
+```bash
+jupyter notebook robust_physical_attack.ipynb
+```
 
 
 ## Videos of Targeted and Untargted Attacks
