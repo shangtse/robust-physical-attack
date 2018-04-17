@@ -4,6 +4,8 @@
 
 This is the code repository for the under-review ECML-PKDD 2018 paper: **Robust Physical Adversarial Attack on Faster R-CNN Object Detector**
 
+The arXiv version is available at https://arxiv.org/abs/1804.05810
+
 The code included here reproduces our techniques presented in the paper. 
 
 In this work, we tackle the more challenging problem of crafting physical adversarial perturbations to fool image-based object detectors like Faster R-CNN.
@@ -28,16 +30,19 @@ jupyter notebook robust_physical_attack.ipynb
 
 High-confidence Person Perturbation:
 https://youtu.be/Zv__RSYIu8c
+person-youtube-thumbnail.png
+![person-youtube-thumbnail](imgs/person-youtube-thumbnail.png)
 
 High-confidence Sports Ball Perturbation:
 https://youtu.be/Idoc1vrN2T0
+![ball-youtube-thumbnail](imgs/ball-youtube-thumbnail.png)
 
 High-confidence Untargeted Attack:
 https://youtu.be/8rwoJ93jhY4
+![untargeted-youtube-thumbnail](imgs/untargeted-youtube-thumbnail.png)
 
 
-
-![drive_by_snapshots](drive_by_snapshots.jpg)
+![drive_by_snapshots](imgs/drive_by_snapshots.jpg)
 Snapshots of the drive-by test results. In (a), the person perturbation was detected 38% of the frames as a person and only once as a stop sign. The perturbation in (b) was detected 11% of the time as a sports ball and never as a stop sign. The untargeted perturbation in (c) was never detected as a stop sign or anything else.
 
 
