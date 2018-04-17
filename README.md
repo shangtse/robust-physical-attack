@@ -30,15 +30,17 @@ jupyter notebook robust_physical_attack.ipynb
 
 High-confidence Person Perturbation:
 https://youtu.be/Zv__RSYIu8c
-person-youtube-thumbnail.png
+
 ![person-youtube-thumbnail](imgs/person-youtube-thumbnail.png)
 
 High-confidence Sports Ball Perturbation:
 https://youtu.be/Idoc1vrN2T0
+
 ![ball-youtube-thumbnail](imgs/ball-youtube-thumbnail.png)
 
 High-confidence Untargeted Attack:
 https://youtu.be/8rwoJ93jhY4
+
 ![untargeted-youtube-thumbnail](imgs/untargeted-youtube-thumbnail.png)
 
 
