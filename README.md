@@ -27,7 +27,7 @@ jupyter notebook robust_physical_attack.ipynb
 
 You can also run the code directly using this Colaboratory link. No need to download or install anything!
 
-https://drive.google.com/file/d/1Vu9HqbIKqXWlr0IH1z3oCq3K3dHE1t4H/view?usp=sharing
+https://colab.research.google.com/drive/1Vu9HqbIKqXWlr0IH1z3oCq3K3dHE1t4H
 
 
 ## Videos of Targeted and Untargted Attacks
