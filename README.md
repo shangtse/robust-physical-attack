@@ -35,17 +35,17 @@ https://colab.research.google.com/drive/1Vu9HqbIKqXWlr0IH1z3oCq3K3dHE1t4H
 High-confidence Person Perturbation:
 https://youtu.be/Zv__RSYIu8c
 
-![person-youtube-thumbnail](imgs/person-youtube-thumbnail.png)
+[![person-youtube-thumbnail](imgs/person-youtube-thumbnail.png)](https://youtu.be/Zv__RSYIu8c)
 
 High-confidence Sports Ball Perturbation:
 https://youtu.be/Idoc1vrN2T0
 
-![ball-youtube-thumbnail](imgs/ball-youtube-thumbnail.png)
+[![ball-youtube-thumbnail](imgs/ball-youtube-thumbnail.png)](https://youtu.be/Idoc1vrN2T0)
 
 High-confidence Untargeted Attack:
 https://youtu.be/8rwoJ93jhY4
 
-![untargeted-youtube-thumbnail](imgs/untargeted-youtube-thumbnail.png)
+[![untargeted-youtube-thumbnail](imgs/untargeted-youtube-thumbnail.png)](https://youtu.be/8rwoJ93jhY4)
 
 
 ![drive_by_snapshots](imgs/drive_by_snapshots.jpg)
