@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is the code repository for the under-review ECML-PKDD 2018 paper: **Robust Physical Adversarial Attack on Faster R-CNN Object Detector**
+This is the code repository for the ECML-PKDD 2018 paper: **ShapeShifter: Robust Physical Adversarial Attack on Faster R-CNN Object Detector**
 
 The arXiv version is available at https://arxiv.org/abs/1804.05810
 
@@ -33,20 +33,25 @@ https://colab.research.google.com/drive/1Vu9HqbIKqXWlr0IH1z3oCq3K3dHE1t4H
 ## Videos of Targeted and Untargted Attacks
 
 High-confidence Person Perturbation:
-https://youtu.be/Zv__RSYIu8c
+https://youtu.be/pc2ssNY98LA
 
-[![person-youtube-thumbnail](imgs/person-youtube-thumbnail.png)](https://youtu.be/Zv__RSYIu8c)
+[![person-youtube-thumbnail](imgs/person-youtube-thumbnail.png)](https://youtu.be/pc2ssNY98LA)
+
+Transferability Experiments: https://youtu.be/O3w00VI4hl0
 
 High-confidence Sports Ball Perturbation:
-https://youtu.be/Idoc1vrN2T0
+https://youtu.be/qHFjYWDUW3U
 
-[![ball-youtube-thumbnail](imgs/ball-youtube-thumbnail.png)](https://youtu.be/Idoc1vrN2T0)
+[![ball-youtube-thumbnail](imgs/ball-youtube-thumbnail.png)](https://youtu.be/qHFjYWDUW3U)
+
+Transferability Experiments: https://youtu.be/yqTVVfnsjxI
 
 High-confidence Untargeted Attack:
-https://youtu.be/8rwoJ93jhY4
+https://youtu.be/906DxYYj_JE
 
-[![untargeted-youtube-thumbnail](imgs/untargeted-youtube-thumbnail.png)](https://youtu.be/8rwoJ93jhY4)
+[![untargeted-youtube-thumbnail](imgs/untargeted-youtube-thumbnail.png)](https://youtu.be/906DxYYj_JE)
 
+Transferability Experiments: https://youtu.be/4KFhULX3v58
 
 ![drive_by_snapshots](imgs/drive_by_snapshots.jpg)
 Snapshots of the drive-by test results. In (a), the person perturbation was detected 38% of the frames as a person and only once as a stop sign. The perturbation in (b) was detected 11% of the time as a sports ball and never as a stop sign. The untargeted perturbation in (c) was never detected as a stop sign or anything else.
