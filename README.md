@@ -33,25 +33,25 @@ https://colab.research.google.com/drive/1Vu9HqbIKqXWlr0IH1z3oCq3K3dHE1t4H
 ## Videos of Targeted and Untargted Attacks
 
 High-confidence Person Perturbation:
-https://youtu.be/pc2ssNY98LA
+https://youtu.be/pc2ssNY98LA  (Transferability Experiments: https://youtu.be/O3w00VI4hl0)
 
 [![person-youtube-thumbnail](imgs/person-youtube-thumbnail.png)](https://youtu.be/pc2ssNY98LA)
 
-Transferability Experiments: https://youtu.be/O3w00VI4hl0
+
 
 High-confidence Sports Ball Perturbation:
-https://youtu.be/qHFjYWDUW3U
+https://youtu.be/qHFjYWDUW3U  (Transferability Experiments: https://youtu.be/yqTVVfnsjxI)
 
 [![ball-youtube-thumbnail](imgs/ball-youtube-thumbnail.png)](https://youtu.be/qHFjYWDUW3U)
 
-Transferability Experiments: https://youtu.be/yqTVVfnsjxI
+
 
 High-confidence Untargeted Attack:
-https://youtu.be/906DxYYj_JE
+https://youtu.be/906DxYYj_JE  (Transferability Experiments: https://youtu.be/4KFhULX3v58)
 
 [![untargeted-youtube-thumbnail](imgs/untargeted-youtube-thumbnail.png)](https://youtu.be/906DxYYj_JE)
 
-Transferability Experiments: https://youtu.be/4KFhULX3v58
+
 
 ![drive_by_snapshots](imgs/drive_by_snapshots.jpg)
 Snapshots of the drive-by test results. In (a), the person perturbation was detected 38% of the frames as a person and only once as a stop sign. The perturbation in (b) was detected 11% of the time as a sports ball and never as a stop sign. The untargeted perturbation in (c) was never detected as a stop sign or anything else.
