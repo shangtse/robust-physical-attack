@@ -1,4 +1,4 @@
-# Robust Physical Adversarial Attack on Faster R-CNN Object Detector
+# ShapeShifter: Robust Physical Adversarial Attack on Faster R-CNN Object Detector
 
 ## Overview
 
