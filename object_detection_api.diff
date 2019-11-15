@@ -1,0 +1,13 @@
+diff --git research/object_detection/meta_architectures/faster_rcnn_meta_arch.py research/object_detection/meta_architectures/faster_rcnn_meta_arch.py
+index ddfbe8a..77731f6 100644
+--- research/object_detection/meta_architectures/faster_rcnn_meta_arch.py
++++ research/object_detection/meta_architectures/faster_rcnn_meta_arch.py
+@@ -878,7 +878,7 @@ class FasterRCNNMetaArch(model.DetectionModel):
+     # the image window at training time and clipping at inference time.
+     clip_window = tf.cast(tf.stack([0, 0, image_shape[1], image_shape[2]]),
+                           dtype=tf.float32)
+-    if self._is_training:
++    if False and self._is_training:
+       if self.clip_anchors_to_image:
+         anchors_boxlist = box_list_ops.clip_to_window(
+             anchors_boxlist, clip_window, filter_nonoverlapping=False)

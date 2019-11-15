@@ -1,0 +1,17 @@
+[[source]]
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.org/simple"
+
+[requires]
+python_version = "3.6"
+
+[packages]
+numpy = "==1.16.4"
+tensorflow-gpu = "==1.13.2"
+pyopengl = "==3.1.0"
+lucid = "==0.3.1"
+object-detection = {git = "https://github.com/tensorflow/models.git", subdirectory = "research", ref = "fe748d4a4a1576b57c279014ac0ceb47344399c4", editable = true}
+slim = {git = "https://github.com/tensorflow/models.git", subdirectory = "research/slim", ref = "fe748d4a4a1576b57c279014ac0ceb47344399c4", editable = true}
+
+[dev-packages]
