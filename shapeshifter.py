@@ -566,7 +566,11 @@ def create_attack(textures, textures_var, predictions, losses, optimizer_name='g
     return victim_class_, target_class_, losses_summary_
 
 def create_evaluation(victim_class, target_class, textures, textures_masks, input_images, detections):
-    # Extract target and victim metrics
+    # Extract proposal, target, and victim metrics
+    proposal_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.LOCAL_VARIABLES])
+    proposal_average_precision_ = tf.identity(proposal_average_precision_var_, name='proposal_average_precision')
+    tf.assign(proposal_average_precision_var_, proposal_average_precision_, name='set_proposal_average_precision')
+
     target_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.LOCAL_VARIABLES])
     target_average_precision_ = tf.identity(target_average_precision_var_, name='target_average_precision')
     tf.assign(target_average_precision_var_, target_average_precision_, name='set_target_average_precision')
@@ -575,7 +579,8 @@ def create_evaluation(victim_class, target_class, textures, textures_masks, inpu
     victim_average_precision_ = tf.identity(victim_average_precision_var_, name='victim_average_precision')
     tf.assign(victim_average_precision_var_, victim_average_precision_, name='set_victim_average_precision')
 
-    metrics_summary_ = tf.summary.merge([tf.summary.scalar('metrics/target_average_precision', target_average_precision_),
+    metrics_summary_ = tf.summary.merge([tf.summary.scalar('metrics/proposal_average_precision', proposal_average_precision_),
+                                         tf.summary.scalar('metrics/target_average_precision', target_average_precision_),
                                          tf.summary.scalar('metrics/victim_average_precision', victim_average_precision_)], name='metrics_summary')
 
     # TODO: Add other_average_precision
@@ -592,15 +597,20 @@ def create_evaluation(victim_class, target_class, textures, textures_masks, inpu
     # TODO: In newer version of Tensorflow summaries can have names so these don't have to be returned
     return metrics_summary_, texture_summary_
 
-def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detections, categories):
+def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detections, predictions, categories):
     # Accumulate and update losses and metrics for each batch
     fetches = {'accum_op': 'accum_op', 'update_losses_op': 'update_losses_op'}
     if detections is not None:
-        fetches.update(detections)
+        fetches[DetectionResultFields.detection_boxes] = detections[DetectionResultFields.detection_boxes]
+        fetches[DetectionResultFields.detection_scores] = detections[DetectionResultFields.detection_scores]
+        fetches[DetectionResultFields.detection_classes] = detections[DetectionResultFields.detection_classes]
+    if predictions is not None:
+        fetches['proposal_boxes_normalized'] = predictions['proposal_boxes_normalized']
+        fetches['proposal_scores'] = 'BatchMultiClassNonMaxSuppression/map/TensorArrayStack_1/TensorArrayGatherV3:0'
 
     # Extract stuff from feed_dict
-    victim_score_thresh = 0.01
-    target_score_thresh = 0.01
+    victim_score_thresh = 0.01 # 1/num_classes is a good value
+    target_score_thresh = 0.01 # 1/num_classes is a good value
 
     target_class = feed_dict['target_class:0']
     victim_class = feed_dict['victim_class:0']
@@ -610,6 +620,7 @@ def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detection
 
     # Create evaluators and set average precisions
     # TODO: parameterize matching_iou_threshold
+    proposal_evaluator = ObjectDetectionEvaluator([{'id': 1, 'name': 'foreground'}], matching_iou_threshold=0.5)
     victim_evaluator = ObjectDetectionEvaluator(categories, matching_iou_threshold=0.5)
     target_evaluator = ObjectDetectionEvaluator(categories, matching_iou_threshold=0.5)
 
@@ -635,7 +646,10 @@ def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detection
         outputs = sess.run(fetches, batch_feed_dict)
 
         # Add groundtruth and detections to evaluators
-        for j, (detection_boxes, detection_scores, detection_classes) in enumerate(zip(outputs[DetectionResultFields.detection_boxes],
+        for j, (proposal_boxes, proposal_scores,
+                detection_boxes, detection_scores, detection_classes) in enumerate(zip(outputs['proposal_boxes_normalized'],
+                                                                                       outputs['proposal_scores'],
+                                                                                       outputs[DetectionResultFields.detection_boxes],
                                                                                        outputs[DetectionResultFields.detection_scores],
                                                                                        outputs[DetectionResultFields.detection_classes])):
             # Get groundtruth for current detections
@@ -646,6 +660,17 @@ def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detection
                 InputDataFields.groundtruth_boxes: groundtruth_boxes * box_scaler,
                 InputDataFields.groundtruth_classes: np.zeros(groundtruth_boxes.shape[:1])
             }
+
+            # Update rpn detections
+            proposal_detections = {
+                DetectionResultFields.detection_boxes: proposal_boxes * box_scaler,
+                DetectionResultFields.detection_scores: proposal_scores,
+                DetectionResultFields.detection_classes: np.ones_like(proposal_scores)
+            }
+
+            groundtruth[InputDataFields.groundtruth_classes][:] = 1
+            proposal_evaluator.add_single_ground_truth_image_info(f"image{i+j}", groundtruth)
+            proposal_evaluator.add_single_detected_image_info(f"image{i+j}", proposal_detections)
 
             # Filter victim detections
             selected_victims = detection_scores > victim_score_thresh
@@ -671,12 +696,14 @@ def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detection
             target_evaluator.add_single_ground_truth_image_info(f"image{i+j}", groundtruth)
             target_evaluator.add_single_detected_image_info(f"image{i+j}", target_detections)
 
+    proposal_metrics = proposal_evaluator.evaluate()
     victim_metrics = victim_evaluator.evaluate()
     target_metrics = target_evaluator.evaluate()
 
     victim_metric_key = next(filter(lambda key: victim_label in key, victim_metrics.keys()))
     target_metric_key = next(filter(lambda key: target_label in key, target_metrics.keys()))
 
+    sess.run('set_proposal_average_precision', {'proposal_average_precision:0': proposal_metrics['Precision/mAP@0.5IOU']})
     sess.run('set_victim_average_precision', {'victim_average_precision:0': victim_metrics[victim_metric_key]})
     sess.run('set_target_average_precision', {'target_average_precision:0': target_metrics[target_metric_key]})
 
@@ -770,8 +797,10 @@ def plot(data, sess, batch_size, bboxes=None, detections=None, col_wrap=5, inclu
             bboxes = outputs['detection_boxes'][i]
 
         labels = None
+        agnostic_mode = True
         if 'detection_classes' in outputs:
             labels = outputs['detection_classes'][i].astype(np.int32) + 1
+            agnostic_mode = False
 
         scores = None
         if 'detection_scores' in outputs:
@@ -783,6 +812,7 @@ def plot(data, sess, batch_size, bboxes=None, detections=None, col_wrap=5, inclu
                                                                                   use_normalized_coordinates=True,
                                                                                   max_boxes_to_draw=bboxes.shape[0],
                                                                                   min_score_thresh=min_score_thresh,
+                                                                                  agnostic_mode=agnostic_mode,
                                                                                   skip_labels=(labels is None),
                                                                                   skip_scores=(scores is None),
                                                                                   line_thickness=line_thickness)

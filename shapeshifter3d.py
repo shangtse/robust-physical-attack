@@ -224,7 +224,7 @@ def main():
                     'total_sim_loss:0',
                     'grad_l2:0', 'grad_linf:0']
 
-    metric_tensors = ['victim_average_precision:0', 'target_average_precision:0']
+    metric_tensors = ['proposal_average_precision:0', 'victim_average_precision:0', 'target_average_precision:0']
 
     output_tensors = loss_tensors + metric_tensors
 
@@ -279,7 +279,7 @@ def main():
                 batch_accumulate(sess, test_feed_dict,
                                  args.test_batch_size, args.batch_size,
                                  generate_data_partial,
-                                 detections, args.categories)
+                                 detections, predictions, args.categories)
 
                 end_time = time.time()
                 log.debug(f"Loss accumulation took {end_time - start_time} seconds")
@@ -315,7 +315,7 @@ def main():
             batch_accumulate(sess, train_feed_dict,
                              args.train_batch_size, args.batch_size,
                              generate_data_partial,
-                             detections, args.categories)
+                             detections, predictions, args.categories)
 
             end_time = time.time()
             log.debug(f"Gradient accumulation took {end_time - start_time} seconds")

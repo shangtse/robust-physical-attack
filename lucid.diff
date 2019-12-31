@@ -1,6 +1,6 @@
-diff -ruNw lucid/misc/gl/glrenderer.py lucid.fixed/misc/gl/glrenderer.py
---- lucid/misc/gl/glrenderer.py	2019-11-11 14:48:04.067818573 -0800
-+++ lucid.fixed/misc/gl/glrenderer.py	2019-11-11 14:41:09.011910380 -0800
+diff -ruNZ lucid/misc/gl/glrenderer.py lucid.fixed/misc/gl/glrenderer.py
+--- lucid/misc/gl/glrenderer.py	2019-12-19 15:24:16.326862130 -0800
++++ lucid.fixed/misc/gl/glrenderer.py	2019-12-20 14:08:34.970990828 -0800
 @@ -124,9 +124,12 @@
    def proj_matrix(self):
      return perspective(self.fovy, self.aspect, self.znear, self.zfar)
@@ -15,30 +15,34 @@ diff -ruNw lucid/misc/gl/glrenderer.py lucid.fixed/misc/gl/glrenderer.py
      MVP = modelview.T.dot(self.proj_matrix())
      MVP = np.ascontiguousarray(MVP, np.float32)
      position = np.ascontiguousarray(position, np.float32)
-@@ -134,15 +137,14 @@
+@@ -134,16 +137,15 @@
        gl.glClearColor(*clear_color)
        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
        
 -      with self.shader, self._bind_attrib(0, position), self._bind_attrib(1, uv):
-+      for i, face in enumerate(faces):
-+        face = np.ascontiguousarray(face, np.uint32)
-+        uvface[:, 2] = i/(len(faces) - 1)
-+
-+        with self.shader, self._bind_attrib(0, position), self._bind_attrib(1, uvface):
-         gl.glUniformMatrix4fv(self.shader['MVP'], 1, gl.GL_FALSE, MVP)
-         gl.glEnable(gl.GL_DEPTH_TEST)
+-        gl.glUniformMatrix4fv(self.shader['MVP'], 1, gl.GL_FALSE, MVP)
+-        gl.glEnable(gl.GL_DEPTH_TEST)
 -        if face is not None:
 -          face = np.ascontiguousarray(face, np.uint32)
++      for i, face in enumerate(faces):
++        face = np.ascontiguousarray(face, np.uint32)
++        uvface[:, 2] = i
++
++        with self.shader, self._bind_attrib(0, position), self._bind_attrib(1, uvface):
++          gl.glUniformMatrix4fv(self.shader['MVP'], 1, gl.GL_FALSE, MVP)
++          gl.glEnable(gl.GL_DEPTH_TEST)
            gl.glDrawElements(gl.GL_TRIANGLES, face.size, gl.GL_UNSIGNED_INT, face)
 -        else:
 -          vert_n = position.size//position.shape[-1]
 -          gl.glDrawArrays(gl.GL_TRIANGLES, 0, vert_n)
-         gl.glDisable(gl.GL_DEPTH_TEST)
+-        gl.glDisable(gl.GL_DEPTH_TEST)
++          gl.glDisable(gl.GL_DEPTH_TEST)
        
        w, h = self.size
-diff -ruNw lucid/misc/gl/meshutil.py lucid.fixed/misc/gl/meshutil.py
---- lucid/misc/gl/meshutil.py	2019-11-11 14:48:04.067818573 -0800
-+++ lucid.fixed/misc/gl/meshutil.py	2019-11-11 14:45:40.375363243 -0800
+       frame = gl.glReadPixels(0, 0, w, h, gl.GL_RGBA, gl.GL_FLOAT)
+diff -ruNZ lucid/misc/gl/meshutil.py lucid.fixed/misc/gl/meshutil.py
+--- lucid/misc/gl/meshutil.py	2019-12-19 15:24:16.326862130 -0800
++++ lucid.fixed/misc/gl/meshutil.py	2019-12-20 14:13:51.780006620 -0800
 @@ -114,7 +114,10 @@
    uv = [np.zeros(2, dtype=np.float32)]
    
@@ -51,81 +55,62 @@ diff -ruNw lucid/misc/gl/meshutil.py lucid.fixed/misc/gl/meshutil.py
    
    input_file = open(fn) if isinstance(fn, str) else fn
    for line in input_file:
-@@ -134,30 +137,47 @@
+@@ -134,6 +137,9 @@
      elif tag == 'vn':
        normal.append(np.fromstring(line, sep=' '))
      elif tag == 'f':
 +      if current_material_idx == -1:
 +        materials.append('__unknown__')
 +        current_material_idx = materials.index('__unknown__')
-+
        output_face_indices = []
        for chunk in line.split():
          # tuple order: pos_idx, uv_idx, normal_idx
--        vt = _parse_vertex_tuple(chunk)
-+        vt = meshutil._parse_vertex_tuple(chunk)
-         if vt not in tuple2idx:  # create a new output vertex?
-           tuple2idx[vt] = len(tuple2idx)
-         output_face_indices.append(tuple2idx[vt])
+@@ -144,10 +150,23 @@
        # generate face triangles
        for i in range(1, len(output_face_indices)-1):
          for vi in [0, i, i+1]:
 -          trinagle_indices.append(output_face_indices[vi])
 +          triangle_indices.append(output_face_indices[vi])
 +          triangle_materials.append(current_material_idx)
++  
 +    elif tag == 'usemtl':
 +      # Create new material
 +      if line not in materials:
 +        materials.append(line)
 +      current_material_idx = materials.index(line)
-   
-   outputs = {}
--  outputs['face'] = np.int32(trinagle_indices)
 +
 +  triangle_indices = np.int32(triangle_indices)
 +  triangle_materials = np.int32(triangle_materials)
-+
+   
+   outputs = {}
+-  outputs['face'] = np.int32(trinagle_indices)
 +  outputs['faces'] = []
 +  outputs['materials'] = materials
 +  for material_idx in np.unique(triangle_materials):
 +    outputs['faces'].append(np.int32(triangle_indices)[triangle_materials == material_idx])
-+
    pos_idx, uv_idx, normal_idx = np.int32(list(tuple2idx)).T
    if np.any(pos_idx):
--    outputs['position'] = _unify_rows(position)[pos_idx]
-+    outputs['position'] = meshutil._unify_rows(position)[pos_idx]
-   if np.any(uv_idx):
--    outputs['uv'] = _unify_rows(uv)[uv_idx]
-+    outputs['uv'] = meshutil._unify_rows(uv)[uv_idx]
-   if np.any(normal_idx):
--    outputs['normal'] = _unify_rows(normal)[normal_idx]
-+    outputs['normal'] = meshutil._unify_rows(normal)[normal_idx]
-   return outputs
- 
--
- def normalize_mesh(mesh):
-   '''Scale mesh to fit into -1..1 cube'''
-   mesh = dict(mesh)
-diff -ruNw lucid/optvis/param/spatial.py lucid.fixed/optvis/param/spatial.py
---- lucid/optvis/param/spatial.py	2019-11-11 14:56:13.824433472 -0800
-+++ lucid.fixed/optvis/param/spatial.py	2019-11-11 14:58:13.382055807 -0800
-@@ -82,32 +82,32 @@
+     outputs['position'] = _unify_rows(position)[pos_idx]
+diff -ruNZ lucid/optvis/param/spatial.py lucid.fixed/optvis/param/spatial.py
+--- lucid/optvis/param/spatial.py	2019-12-19 15:24:16.326862130 -0800
++++ lucid.fixed/optvis/param/spatial.py	2019-12-20 14:13:22.023520434 -0800
+@@ -82,32 +82,33 @@
    return pyramid
  
  
 -def sample_bilinear(texture, uv):
 +def sample_bilinear(textures, uvf):
    """Build bilinear texture sampling graph.
--
+ 
    Coordinate transformation rules match OpenGL GL_REPEAT wrapping and GL_LINEAR
    interpolation modes.
--
+ 
    Args:
 -    texture: [tex_h, tex_w, channel_n] tensor.
 -    uv: [frame_h, frame_h, 2] tensor with per-pixel UV coordinates in range [0..1]
--
 +    texture: [tex_c, tex_h, tex_w, channel_n] tensor.
 +    uvf: [frame_h, frame_w, 3] tensor with per-pixel UV coordinates in range [0..1]
+ 
    Returns:
 -    [frame_h, frame_h, channel_n] tensor with per-pixel sampled values.
 +    [frame_h, frame_w, channel_n] tensor with per-pixel sampled values.
@@ -146,12 +131,10 @@ diff -ruNw lucid/optvis/param/spatial.py lucid.fixed/optvis/param/spatial.py
 -  s00, s01 = sample(u0, v0), sample(u0, v1)
 -  s10, s11 = sample(u1, v0), sample(u1, v1)
 +  u0, u1, v0, v1, f = map(tf.to_int32, [u0, u1, v0, v1, f])
-+
 +  def sample(u, v, f):
 +    fvu = tf.concat([f % c, v % h, u % w], axis=-1)
 +    s = tf.gather_nd(textures, fvu)
 +    return s
-+
 +  s00, s01 = sample(u0, v0, f), sample(u0, v1, f)
 +  s10, s11 = sample(u1, v0, f), sample(u1, v1, f)
    s0 = s00*(1.0-vf) + s01*vf

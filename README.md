@@ -32,11 +32,26 @@ https://colab.research.google.com/drive/1Vu9HqbIKqXWlr0IH1z3oCq3K3dHE1t4H
 ---
 :new:
 
-Alternatively, you can use our `shapeshifter2d.py` and `shapeshifter3d.py` scripts to generate shapeshifter-style perturbations. We currently only have an example for generating a targeted and untargeted 2D stop sign perturbation in the `Makefile`:
+Alternatively, you can use our `shapeshifter2d.py` and `shapeshifter3d.py` scripts to generate shapeshifter-style perturbations. We currently support the following attacks:
 ```
-make 2d_targeted_attack
-make 2d_untargeted_attack
-make 2d_rpn_attack
+$ make
+
+Usage:
+  make <target>
+  help                          Display this help
+
+Dependencies
+  deps                          Install dependencies, compile protobufs, and patch projects.
+
+Helpers
+  tensorboard                   Launch tensorboard to monitor progress.
+
+Attacks
+  2d_targeted_attack            Create 2d stop sign that is detected as a person.
+  2d_untargeted_attack          Create 2d stop sign that is not detected as a stop sign.
+  2d_proposal_attack            Create 2d stop sign that is not detected.
+  2d_hybrid_targeted_attack     Create 2d stop sign that is either not detected at all or detected as a person.
+  2d_hybrid_untargeted_attack   Create 2d stop sign that is either not detected at all or not detected as a stop sign.
 ```
 
 You will have to first install our dependencies and patches via:
@@ -68,10 +83,10 @@ We used `make 2d_untargeted_attack` to create this perturbation.
 
 ![2D Untargeted Attack](imgs/2d_untargeted_attack.png)
 
-### RPN Attack
-We used `make 2d_rpn_attack` to create this perturbation.
+### Proposal Attack
+We used `make 2d_proposal_attack` to create this perturbation.
 
-![2D RPN Attack](imgs/2d_rpn_attack.png)
+![2D Proposal Attack](imgs/2d_proposal_attack.png)
 
 ## Videos of Targeted and Untargeted Attacks
 
