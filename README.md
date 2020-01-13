@@ -32,29 +32,39 @@ https://colab.research.google.com/drive/1Vu9HqbIKqXWlr0IH1z3oCq3K3dHE1t4H
 ---
 :new:
 
-Alternatively, you can use our `shapeshifter2d.py` and `shapeshifter3d.py` scripts to generate shapeshifter-style perturbations. We currently support the following attacks:
+Alternatively, you can use our `shapeshifter2d.py` and `shapeshifter3d.py` scripts to generate shapeshifter-style perturbations. We currently have examples for various shapeshifter-style perturbations in the `Makefile`:
 ```
 $ make
 
 Usage:
   make <target>
-  help                          Display this help
+  help                                  Display this help
 
 Dependencies
-  deps                          Install dependencies, compile protobufs, and patch projects.
+  deps                                  Install dependencies, compile protobufs, and patch projects.
 
 Helpers
-  tensorboard                   Launch tensorboard to monitor progress.
+  tensorboard                           Launch tensorboard to monitor progress.
 
 Attacks
-  2d_targeted_attack            Create 2d stop sign that is detected as a person.
-  2d_untargeted_attack          Create 2d stop sign that is not detected as a stop sign.
-  2d_proposal_attack            Create 2d stop sign that is not detected.
-  2d_hybrid_targeted_attack     Create 2d stop sign that is either not detected at all or detected as a person.
-  2d_hybrid_untargeted_attack   Create 2d stop sign that is either not detected at all or not detected as a stop sign.
+  2d_stopsign_targeted_attack           Create 2d stop sign that is detected as a person.
+  2d_stopsign_untargeted_attack         Create 2d stop sign that is not detected as a stop sign.
+  2d_stopsign_proposal_attack           Create 2d stop sign that is not detected.
+  2d_stopsign_hybrid_targeted_attack    Create 2d stop sign that is either not detected at all or detected as a person.
+  2d_stopsign_hybrid_untargeted_attack  Create 2d stop sign that is either not detected at all or not detected as a stop sign.
+  2d_person_proposal_attack             Create 2d tshirt that is not detected.
+  2d_person_targeted_attack             Create 2d tshirt that is detected as a bird.
+  2d_person_untargeted                  Create 2d tshirt that is not detected as a person.
+  2d_person_hybrid_untargeted           Create 2d tshirt that is either not detected at all or not detected as a person.
+  2d_person_hybrid_targeted             Create 2d tshirt that is either not detected or is detected as a bird.
+  3d_person_targeted_attack             Create 3d outfit that is detected as a bird.
+  3d_person_untargeted_attack           Create 3d outfit that is not detected as a person.
+  3d_person_proposal_attack             Create 3d outfit that is not detected.
+  3d_person_hybrid_targeted_attack      Create 3d outfit that is either not detected at all or detected as a bird.
+  3d_person_hybrid_untargeted_attack    Create 3d outfit that is either not detected at all or not detected as a person.
 ```
 
-You will have to first install our dependencies and patches via:
+For these to work, you will have to first install our dependencies and patches via:
 ```
 make deps
 ```
@@ -68,23 +78,21 @@ Navigate your browser to the printed url to see the Tensorboard output.
 
 You can also see example outputs from these scripts in the pictures section below.
 
-:soon:
-
-We also plan to release our 3D ShapeShifter pedestrian models that we showcased in our [recent talk at DSML'19](https://arxiv.org/abs/1904.12622).
+We have also released our 3D ShapeShifter pedestrian models that we showcased in our [recent talk at DSML'19](https://arxiv.org/abs/1904.12622). However, we are unable to distribute the meshes and textures we extracted from CARLA as this time.
 
 ## Pictures of Targeted and Untargeted Attacks
 ### Targeted (Person) Perturbation
-We used `make 2d_targeted_attack` to create this perturbation.
+We used `make 2d_stopsign_targeted_attack` to create this perturbation.
 
 ![2D Targeted Attack (person)](imgs/2d_targeted_attack.png)
 
 ### Untargeted Perturbation
-We used `make 2d_untargeted_attack` to create this perturbation.
+We used `make 2d_stopsign_untargeted_attack` to create this perturbation.
 
 ![2D Untargeted Attack](imgs/2d_untargeted_attack.png)
 
 ### Proposal Attack
-We used `make 2d_proposal_attack` to create this perturbation.
+We used `make 2d_stopsign_proposal_attack` to create this perturbation.
 
 ![2D Proposal Attack](imgs/2d_proposal_attack.png)
 

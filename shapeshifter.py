@@ -567,21 +567,40 @@ def create_attack(textures, textures_var, predictions, losses, optimizer_name='g
 
 def create_evaluation(victim_class, target_class, textures, textures_masks, input_images, detections):
     # Extract proposal, target, and victim metrics
-    proposal_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.LOCAL_VARIABLES])
+    # Average Precision
+    proposal_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.LOCAL_VARIABLES])
     proposal_average_precision_ = tf.identity(proposal_average_precision_var_, name='proposal_average_precision')
     tf.assign(proposal_average_precision_var_, proposal_average_precision_, name='set_proposal_average_precision')
 
-    target_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.LOCAL_VARIABLES])
+    target_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.LOCAL_VARIABLES])
     target_average_precision_ = tf.identity(target_average_precision_var_, name='target_average_precision')
     tf.assign(target_average_precision_var_, target_average_precision_, name='set_target_average_precision')
 
-    victim_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.GLOBAL_VARIABLES, tf.GraphKeys.LOCAL_VARIABLES])
+    victim_average_precision_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.LOCAL_VARIABLES])
     victim_average_precision_ = tf.identity(victim_average_precision_var_, name='victim_average_precision')
     tf.assign(victim_average_precision_var_, victim_average_precision_, name='set_victim_average_precision')
 
+    # Correct Localizations
+    proposal_corloc_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.LOCAL_VARIABLES])
+    proposal_corloc_ = tf.identity(proposal_corloc_var_, name='proposal_corloc')
+    tf.assign(proposal_corloc_var_, proposal_corloc_, name='set_proposal_corloc')
+
+    target_corloc_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.LOCAL_VARIABLES])
+    target_corloc_ = tf.identity(target_corloc_var_, name='target_corloc')
+    tf.assign(target_corloc_var_, target_corloc_, name='set_target_corloc')
+
+    victim_corloc_var_ = tf.Variable(0.0, collections=[tf.GraphKeys.LOCAL_VARIABLES])
+    victim_corloc_ = tf.identity(victim_corloc_var_, name='victim_corloc')
+    tf.assign(victim_corloc_var_, victim_corloc_, name='set_victim_corloc')
+
+    # Create summaries of metrics
     metrics_summary_ = tf.summary.merge([tf.summary.scalar('metrics/proposal_average_precision', proposal_average_precision_),
                                          tf.summary.scalar('metrics/target_average_precision', target_average_precision_),
-                                         tf.summary.scalar('metrics/victim_average_precision', victim_average_precision_)], name='metrics_summary')
+                                         tf.summary.scalar('metrics/victim_average_precision', victim_average_precision_),
+                                         tf.summary.scalar('metrics/proposal_corloc', proposal_corloc_),
+                                         tf.summary.scalar('metrics/target_corloc', target_corloc_),
+                                         tf.summary.scalar('metrics/victim_corloc', victim_corloc_),
+                                        ], name='metrics_summary')
 
     # TODO: Add other_average_precision
 
@@ -615,14 +634,17 @@ def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detection
     target_class = feed_dict['target_class:0']
     victim_class = feed_dict['victim_class:0']
 
+    iou_thresh = 0.5
+
+    proposal_label = 'foreground'
     target_label = next(filter(lambda category: category['id'] == target_class, categories))['name']
     victim_label = next(filter(lambda category: category['id'] == victim_class, categories))['name']
 
     # Create evaluators and set average precisions
     # TODO: parameterize matching_iou_threshold
-    proposal_evaluator = ObjectDetectionEvaluator([{'id': 1, 'name': 'foreground'}], matching_iou_threshold=0.5)
-    victim_evaluator = ObjectDetectionEvaluator(categories, matching_iou_threshold=0.5)
-    target_evaluator = ObjectDetectionEvaluator(categories, matching_iou_threshold=0.5)
+    proposal_evaluator = ObjectDetectionEvaluator([{'id': 1, 'name': proposal_label}], matching_iou_threshold=iou_thresh, evaluate_corlocs=True)
+    victim_evaluator = ObjectDetectionEvaluator(categories, matching_iou_threshold=iou_thresh, evaluate_corlocs=True)
+    target_evaluator = ObjectDetectionEvaluator(categories, matching_iou_threshold=iou_thresh, evaluate_corlocs=True)
 
     for i in range(0, count, batch_size):
         batch_feed_dict = feed_dict.copy()
@@ -700,12 +722,13 @@ def batch_accumulate(sess, feed_dict, count, batch_size, dict_or_func, detection
     victim_metrics = victim_evaluator.evaluate()
     target_metrics = target_evaluator.evaluate()
 
-    victim_metric_key = next(filter(lambda key: victim_label in key, victim_metrics.keys()))
-    target_metric_key = next(filter(lambda key: target_label in key, target_metrics.keys()))
+    sess.run('set_proposal_average_precision', {'proposal_average_precision:0': proposal_metrics['PerformanceByCategory/AP@{}IOU/{}'.format(iou_thresh, proposal_label)]})
+    sess.run('set_victim_average_precision', {'victim_average_precision:0': victim_metrics['PerformanceByCategory/AP@{}IOU/{}'.format(iou_thresh, victim_label)]})
+    sess.run('set_target_average_precision', {'target_average_precision:0': target_metrics['PerformanceByCategory/AP@{}IOU/{}'.format(iou_thresh, target_label)]})
 
-    sess.run('set_proposal_average_precision', {'proposal_average_precision:0': proposal_metrics['Precision/mAP@0.5IOU']})
-    sess.run('set_victim_average_precision', {'victim_average_precision:0': victim_metrics[victim_metric_key]})
-    sess.run('set_target_average_precision', {'target_average_precision:0': target_metrics[target_metric_key]})
+    sess.run('set_proposal_corloc', {'proposal_corloc:0': proposal_metrics['PerformanceByCategory/CorLoc@{}IOU/{}'.format(iou_thresh, proposal_label)]})
+    sess.run('set_victim_corloc', {'victim_corloc:0': victim_metrics['PerformanceByCategory/CorLoc@{}IOU/{}'.format(iou_thresh, victim_label)]})
+    sess.run('set_target_corloc', {'target_corloc:0': target_metrics['PerformanceByCategory/CorLoc@{}IOU/{}'.format(iou_thresh, target_label)]})
 
 def batch_run(sess, fetches, feed_dict, batch_size, data):
     outputs = {}
