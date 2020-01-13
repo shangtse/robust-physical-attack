@@ -3,8 +3,8 @@ MODELS_DIR=models
 DATA_DIR=data
 LOG_DIR=logdir
 
-OBJDET_DIR=$(shell pipenv run pip show object-detection | grep "Location:" | cut -d" " -f2)
-LUCID_DIR=$(shell pipenv run pip show lucid | grep "Location:" | cut -d" " -f2)/lucid
+OBJDET_DIR=`pipenv run pip show object-detection | grep "Location:" | cut -d" " -f2`
+LUCID_DIR=`pipenv run pip show lucid | grep "Location:" | cut -d" " -f2`/lucid
 
 .PHONY: help deps tensorboard \
         2d_stopsign_targeted_attack 2d_stopsign_untargeted_attack 2d_stopsign_proposal_attack 2d_stopsign_hybrid_targeted_attack 2d_stopsign_hybrid_untargeted_attack \
